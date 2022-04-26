@@ -1,18 +1,12 @@
 FROM openjdk:11 AS builder
-RUN apt update
-RUN apt install wget
-RUN apt install unzip
-WORKDIR /usr/src 
-RUN wget https://github.com/anbansal/OpenAs2App/archive/refs/heads/master.zip
-RUN unzip master.zip
-RUN rm master.zip
-RUN mv ./OpenAs2App-master/ ./openas2
+COPY . /usr/src/openas2
 WORKDIR /usr/src/openas2
 # To test Locally builder environment:
 # docker run --rm -it -v $(pwd):/usr/src/openas2 openjdk:11 bash
 RUN rm -f Server/dist/*
 RUN rm -f Remote/dist/*
 RUN rm -f Bundle/dist/*
+RUN sed -i 's/\r//' ./mvnw
 RUN ./mvnw clean package
 RUN mkdir ./Runtime && unzip Server/dist/OpenAS2Server-*.zip -d Runtime
 RUN ./mvnw clean
@@ -35,6 +29,3 @@ RUN mkdir ${OPENAS2_BASE}/config
 WORKDIR $OPENAS2_HOME
 RUN sed -i 's/\r//' ${OPENAS2_BASE}/bin/start-container.sh
 ENTRYPOINT ${OPENAS2_BASE}/bin/start-container.sh
-
-
-
