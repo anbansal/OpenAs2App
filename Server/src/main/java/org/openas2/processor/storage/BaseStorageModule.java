@@ -80,8 +80,8 @@ public abstract class BaseStorageModule extends BaseProcessorModule implements S
         // make sure the parent directories exist
         File file = new File(filename);
         File parentDir = file.getParentFile();
-        parentDir.mkdirs();
-
+        // parentDir.mkdirs();
+        IOUtil.getDirectoryFile(parentDir.getAbsolutePath());
         return file;
 
     }

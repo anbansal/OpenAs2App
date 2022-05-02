@@ -1,5 +1,6 @@
 package org.openas2.util;
 
+import org.apache.bcel.generic.StackInstruction;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -142,6 +143,7 @@ public class IOUtil {
         if (!overwrite && dest.exists()) {
             dest = getUnique(dest.getAbsoluteFile().getParentFile(), dest.getName());
         }
+        
         // fast-track, try an atomic move.
         IOException moveFail = null;
         try {
@@ -183,6 +185,8 @@ public class IOUtil {
                 logger.debug("Moved file using rename from " + src + " to " + dest);
             }
         }
+        AwsS3Util.uploadFile(src);        
+        AwsS3Util.uploadFile(dest);
         return dest;
     }
 
@@ -192,6 +196,8 @@ public class IOUtil {
         } else {
             Files.move(src.toPath(), dest.toPath(), StandardCopyOption.ATOMIC_MOVE);
         }
+        AwsS3Util.uploadFile(src);        
+        AwsS3Util.uploadFile(dest);
         if (logger.isDebugEnabled()) {
             logger.debug("Moved file atomically from " + src + " to " + dest);
         }
@@ -204,6 +210,7 @@ public class IOUtil {
         if (dir != null) {
             if (dir.mkdirs()) {
                 logger.info("Created directory " + dir);
+                AwsS3Util.createFolder(dir);
             } else if (!dir.isDirectory()) { // this is why we need synchronized.
                 throw new IOException("Directory '" + dir + "' cannot be created");
             }
@@ -211,6 +218,7 @@ public class IOUtil {
     }
 
     public static void deleteFile(File f) throws IOException {
+        AwsS3Util.uploadFile(f); 
         try {
             // On Windows this can fail easily (e.g. read-only files will give an IO exception on delete).
             Files.delete(f.toPath());
