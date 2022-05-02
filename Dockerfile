@@ -12,7 +12,8 @@ RUN mkdir ./Runtime && unzip Server/dist/OpenAS2Server-*.zip -d Runtime
 RUN ./mvnw clean
 COPY start-container.sh /usr/src/openas2/Runtime/bin/
 RUN cd /usr/src/openas2/Runtime/bin && \
-    chmod 755 *.sh && \
+    chmod 755 *.sh && \    
+    sed -i 's/\r//' *.sh && \ 
     cd /usr/src/openas2/Runtime && \
     mv config config_template
 
@@ -27,5 +28,4 @@ COPY --from=builder /usr/src/openas2/Runtime/resources ${OPENAS2_BASE}/resources
 COPY --from=builder /usr/src/openas2/Runtime/config_template ${OPENAS2_HOME}/config_template
 RUN mkdir ${OPENAS2_BASE}/config
 WORKDIR $OPENAS2_HOME
-RUN sed -i 's/\r//' ${OPENAS2_BASE}/bin/start-container.sh
 ENTRYPOINT ${OPENAS2_BASE}/bin/start-container.sh
