@@ -60,7 +60,6 @@ public abstract class DirectoryPollingModule extends PollingModule {
             if (excludeFilenameRegexFilter != null && excludeFilenameRegexFilter.length() > 0) {
                 this.excludeFilenameRegexFilter = excludeFilenameRegexFilter;
             }
-
         } catch (IOException e) {
             throw new OpenAS2Exception("Failed to initialise directory poller.", e);
         }

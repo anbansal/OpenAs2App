@@ -199,7 +199,7 @@ public class IOUtil {
         AwsS3Util.uploadFile(src);        
         AwsS3Util.uploadFile(dest);
         if (logger.isDebugEnabled()) {
-            logger.debug("Moved file atomically from " + src + " to " + dest);
+            logger.debug("Moved file atomically from " + src + " to " + dest);   
         }
     }
 

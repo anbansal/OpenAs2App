@@ -1,16 +1,22 @@
 package org.openas2.util;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-// import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
-// import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-// import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 public class AwsS3Util {
     private static final Log logger = LogFactory.getLog(IOUtil.class.getSimpleName());
@@ -50,4 +56,29 @@ public class AwsS3Util {
         }      
     }
 
+    public static void cleanBucket() {
+        ListObjectsRequest listRequest = ListObjectsRequest.builder()
+                                            .bucket(bucketName).build();
+
+        ListObjectsResponse listResponse = s3Client.listObjects(listRequest);
+        List<S3Object> listObjects = listResponse.contents();
+        if(listObjects.size() != 0){
+            List<ObjectIdentifier> objectsToDelete = new ArrayList<ObjectIdentifier>();
+
+            for (S3Object s3Object : listObjects) {
+                objectsToDelete.add(ObjectIdentifier.builder().key(s3Object.key()).build());
+            }
+
+            DeleteObjectsRequest deleteObjectsRequest = DeleteObjectsRequest.builder()
+                                                        .bucket(bucketName)
+                                                        .delete(Delete.builder().objects(objectsToDelete).build())
+                                                        .build();
+
+            DeleteObjectsResponse deleteObjectsResponse = s3Client.deleteObjects(deleteObjectsRequest);
+
+            logger.info("AWS S3 bucket "+bucketName +" is cleaned: "+ deleteObjectsResponse.hasDeleted());
+        }
+    }    
 }
+
+
