@@ -27,7 +27,8 @@ import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 public class AwsS3Util {
     private static final Log logger = LogFactory.getLog(IOUtil.class.getSimpleName());
     private static final S3Client s3Client = S3Client.builder().build();
-    private static String bucketName = "openas2-data-" + System.currentTimeMillis();;
+    private static String bucketName = "openas2-data-001";
+    // private static String bucketName = "openas2-data-001" + System.currentTimeMillis();
 
     public static void createBucket() {
         try {
