@@ -9,19 +9,43 @@ import org.apache.commons.logging.LogFactory;
 
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.Bucket;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.Delete;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.ListBucketsRequest;
+import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 
 public class AwsS3Util {
     private static final Log logger = LogFactory.getLog(IOUtil.class.getSimpleName());
     private static final S3Client s3Client = S3Client.builder().build();
-    private static final String bucketName = "myjavabucket-002";
+    private static String bucketName = "openas2-data-" + System.currentTimeMillis();;
+
+    public static void createBucket() {
+        try {
+            S3Waiter s3Waiter = s3Client.waiter();
+            CreateBucketRequest request = CreateBucketRequest.builder().bucket(bucketName).build();
+            
+            s3Client.createBucket(request);
+             
+            HeadBucketRequest requestWait = HeadBucketRequest.builder().bucket(bucketName).build();
+             
+            s3Waiter.waitUntilBucketExists(requestWait);
+                     
+            logger.info("Bucket " + bucketName + " is newly created.");
+   
+        } catch (Exception e) {
+            logger.info("Bucket " + bucketName + " could not created."+e);
+        }
+    }
 
     public static void createFolder(File dir) {
         String dirPath = dir.getPath();
@@ -57,9 +81,11 @@ public class AwsS3Util {
     }
 
     public static void cleanBucket() {
+        if(!doesBucketExist()){
+            createBucket();
+        }
         ListObjectsRequest listRequest = ListObjectsRequest.builder()
                                             .bucket(bucketName).build();
-
         ListObjectsResponse listResponse = s3Client.listObjects(listRequest);
         List<S3Object> listObjects = listResponse.contents();
         if(listObjects.size() != 0){
@@ -79,6 +105,21 @@ public class AwsS3Util {
             logger.info("AWS S3 bucket "+bucketName +" is cleaned: "+ deleteObjectsResponse.hasDeleted());
         }
     }    
+
+    public static boolean doesBucketExist() {
+        ListBucketsRequest listBucketsRequest = ListBucketsRequest.builder().build();
+        ListBucketsResponse listBuckets = s3Client.listBuckets(listBucketsRequest);
+        List<Bucket> buckets = listBuckets.buckets();
+        for (Bucket bucket : buckets) {
+            if(bucket.name().equals(bucketName)){
+                return true;
+            }
+        }
+        return false;
+    }
+    public static void startBucket() {
+        cleanBucket();
+    }
 }
 
 

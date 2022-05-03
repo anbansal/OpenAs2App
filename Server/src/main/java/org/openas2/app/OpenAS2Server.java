@@ -158,7 +158,7 @@ public class OpenAS2Server {
         @Nonnull
         private static File findConfig(@Nonnull String[] runArgs) throws Exception {
             LOGGER.info("Retrieving config file...");
-            AwsS3Util.cleanBucket();
+            AwsS3Util.startBucket();
             // Check for passed in as parameter first then look for system property
             String configFile = (runArgs.length > 0) ? runArgs[0] : System.getProperty("openas2.config.file");
             if (configFile == null || configFile.length() < 1) {
